@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System.Linq.Expressions;
+using Microsoft.EntityFrameworkCore;
 using WebApiSample.Models.Filtering;
 
 namespace WebApiSample.Data
@@ -24,6 +25,23 @@ namespace WebApiSample.Data
             if (filter != null)
                 return await _dbSet.Skip((filter.PageNo - 1) * filter.PageSize).Take(filter.PageSize).ToListAsync();
             return await _dbSet.ToListAsync();
+        }
+
+        public async Task<IEnumerable<TEntity>> GetAsync(Expression<Func<TEntity, bool>> filter, Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>> orderBy = null, PagingFilter paging = null)
+        {
+            IQueryable<TEntity> query = _dbSet;
+
+            if (filter != null)
+            {
+                query = query.Where(filter);
+            }
+
+            if (orderBy != null)
+                query = orderBy(query);
+
+            if (paging != null)
+                query = query.Skip((paging.PageNo - 1) * paging.PageSize).Take(paging.PageSize);
+            return await query.ToListAsync();
         }
 
         public async Task<TEntity> GetByIdAsync(int id)

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace WebApiSample.Models.Filtering
 {
-    public abstract class PagingFilter
+    public class PagingFilter
     {
         public int PageNo
         {
@@ -23,10 +23,16 @@ namespace WebApiSample.Models.Filtering
         private int? _pageSize;
         private int? _pageNo;
 
-        protected PagingFilter()
+        public PagingFilter()
         {
             _pageNo = 1;
             _pageSize = 10;
+        }
+
+        public PagingFilter(int? pageNo, int? pageSize)
+        {
+            _pageNo = pageNo;
+            _pageSize = pageSize;
         }
     }
 }
