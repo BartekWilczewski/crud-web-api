@@ -1,7 +1,6 @@
-using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Net.Http.Headers;
 using WebApiSample.Data;
+using WebApiSample.Models;
 
 namespace WebApiSample
 {
@@ -15,6 +14,8 @@ namespace WebApiSample
 
             builder.Services.AddControllers();
             builder.Services.AddDbContext<ApiDbContext>(opt => opt.UseInMemoryDatabase("BookStore"));
+            builder.Services.AddScoped<IRepo<Book>, DataRepository<Book>>();
+            builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();

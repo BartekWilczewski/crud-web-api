@@ -1,10 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
-using WebApiSample.Models;
+﻿using Microsoft.EntityFrameworkCore;
+using WebApiSample.Models.Filtering;
 
 namespace WebApiSample.Data
 {
@@ -24,6 +19,13 @@ namespace WebApiSample.Data
             return await _dbSet.ToListAsync();
         }
 
+        public async Task<IEnumerable<TEntity>> GetAsync(PagingFilter filter)
+        {
+            if (filter != null)
+                return await _dbSet.Skip((filter.PageNo - 1) * filter.PageSize).Take(filter.PageSize).ToListAsync();
+            return await _dbSet.ToListAsync();
+        }
+
         public async Task<TEntity> GetByIdAsync(int id)
         {
             return await _dbSet.FindAsync(id);
@@ -32,21 +34,22 @@ namespace WebApiSample.Data
         public async Task InsertAsync(TEntity entity)
         {
            await _dbSet.AddAsync(entity);
-           await _ctx.SaveChangesAsync();
         }
 
         public void Update(TEntity entity)
         {
             _ctx.Entry(entity).State = EntityState.Modified;
-            _ctx.SaveChanges();
         }
 
         public async Task DeleteAsync(int id)
         {
             var entity = await _dbSet.FindAsync(id);
             _dbSet.Remove(entity);
-            await _ctx.SaveChangesAsync();
+        }
 
+        public async Task SaveChangesAsync()
+        {
+            await _ctx.SaveChangesAsync();
         }
     }
 }
