@@ -1,8 +1,12 @@
 using System.Reflection;
+using System.Text.Json.Serialization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
+using NLog;
+using WebApiSample.Config;
 using WebApiSample.Data;
 using WebApiSample.Models;
+using WebApiSample.Helpers;
 
 namespace WebApiSample
 {
@@ -14,10 +18,12 @@ namespace WebApiSample
 
             // Add services to the container.
 
-            builder.Services.AddControllers();
+            builder.Services.AddControllers()
+                .AddJsonOptions(x => x.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles);
             builder.Services.AddDbContext<ApiDbContext>(opt => opt.UseInMemoryDatabase("BookStore"));
             builder.Services.AddScoped<IRepo<Book>, DataRepository<Book>>();
             builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+            builder.Services.ConfigureNlogLogger();
             builder.Services.AddMemoryCache();
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
@@ -40,11 +46,13 @@ namespace WebApiSample
                 var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
                 opts.IncludeXmlComments(xmlPath);
             });
-
+            builder.Services.Configure<MailSettings>(builder.Configuration.GetSection("MailSettings"));
+            LogManager.LoadConfiguration($"{Directory.GetCurrentDirectory()}/nlog.config");
 
 
 
             var app = builder.Build();
+            app.ConfigureExceptionMiddleware();
 
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())

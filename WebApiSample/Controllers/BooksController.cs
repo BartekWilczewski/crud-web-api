@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Options;
+using WebApiSample.Config;
 using WebApiSample.Data;
 using WebApiSample.Filters;
 using WebApiSample.Models;
@@ -15,6 +17,7 @@ namespace WebApiSample.Controllers
     {
         private readonly IUnitOfWork _uow;
         private IMemoryCache _cache;
+        private readonly MailSettings _mailSettings;
 
         private MemoryCacheEntryOptions _cacheEntryOptions = new MemoryCacheEntryOptions()
             .SetSlidingExpiration(TimeSpan.FromSeconds(60))
@@ -22,10 +25,11 @@ namespace WebApiSample.Controllers
             .SetPriority(CacheItemPriority.Normal)
             .SetSize(1000);
 
-        public BooksController(IUnitOfWork uow, IMemoryCache cache)
+        public BooksController(IUnitOfWork uow, IMemoryCache cache, IOptions<MailSettings> options)
         {
             _uow = uow;
             _cache = cache;
+            _mailSettings = options.Value;
         }
 
         [HttpPost]
@@ -45,8 +49,8 @@ namespace WebApiSample.Controllers
             IEnumerable<Book> data;
             if (!_cache.TryGetValue(CacheKeys.BookListCacheKey, out data))
             {
-                data = await _uow.BookRepo.GetAsync(filter);
-                if(data.Any())
+                data = await _uow.BookRepo.GetAsync(filter, "Author");
+                if (data.Any())
                     _cache.Set(CacheKeys.BookListCacheKey, data, _cacheEntryOptions);
             }
 
@@ -65,7 +69,7 @@ namespace WebApiSample.Controllers
         [Route("{id}")]
         public async Task<Book> Get(int id)
         {
-            return await _uow.BookRepo.GetByIdAsync(id);
+            return await _uow.BookRepo.GetByIdAsync(id, "Author");
         }
 
 

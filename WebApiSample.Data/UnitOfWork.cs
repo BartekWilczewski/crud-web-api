@@ -5,9 +5,12 @@ namespace WebApiSample.Data
     public class UnitOfWork : IUnitOfWork
     {
         private readonly ApiDbContext _ctx;
-        public UnitOfWork(ApiDbContext ctx, IRepo<Book> bookRepo)
+        public UnitOfWork(ApiDbContext ctx, IRepo<Book?> bookRepo)
         {
             _ctx = ctx;
+            //temp solution, in-memory db seed
+            if(!_ctx.Books.Any())
+                Seeder.Seed(_ctx);
             BookRepo = bookRepo;
         }
         public virtual void Dispose(bool disposing)
@@ -22,7 +25,7 @@ namespace WebApiSample.Data
             GC.SuppressFinalize(this);
         }
 
-        public IRepo<Book> BookRepo { get; }
+        public IRepo<Book?> BookRepo { get; }
         public async Task SaveChangesAsync()
         {
             await _ctx.SaveChangesAsync();

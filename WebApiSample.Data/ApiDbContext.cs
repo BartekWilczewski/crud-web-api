@@ -11,5 +11,12 @@ namespace WebApiSample.Data
         }
 
         public DbSet<Book> Books { get; set; } = null;
+        public DbSet<Author> Authors { get; set; }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            //modelBuilder.Entity<Author>()
+            //    .HasMany<Book>(a => a.Books);
+        }
     }
 }
